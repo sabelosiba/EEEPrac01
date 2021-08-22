@@ -18,6 +18,12 @@
 #include "BinClock.h"
 #include "CurrentTime.h"
 
+// LED Pin - wiringPi pin 4 is BCM_GPIO 23.
+#define LED     4
+// BUTTONS pins
+#define BUTTON1 21
+#define BUTTON2 27
+
 //Global variables
 int hours, mins, secs;
 long lastInterruptTime = 0; //Used for button debounce
@@ -29,9 +35,12 @@ int HH,MM,SS;
 // Clean up function to avoid damaging used pins
 void CleanUp(int sig){
 	printf("Cleaning up\n");
-
+	
 	//Set LED to low then input mode
 	//Logic here
+	digitalWrite(LED , 0); // LED set to LOW
+	pinMode(LED , INPUT);  // LED set input mode
+	
 
 
 	for (int j=0; j < sizeof(BTNS)/sizeof(BTNS[0]); j++) {
@@ -56,7 +65,7 @@ void initGPIO(void){
 	
 	//Set up the LED
 	//Write your Logic here
-
+	pinMode (LED, OUTPUT) ;
 	
 	printf("LED and RTC done\n");
 	
@@ -68,8 +77,8 @@ void initGPIO(void){
 	
 	//Attach interrupts to Buttons
 	//Write your logic here
-	
-
+	wiringPiISR(BUTTON1 , INT_EDGE_BOTH , &hourInc);
+	wiringPiISR(BUTTON2 , INT_EDGE_BOTH , &minInc);
 
 	printf("BTNS done\n");
 	printf("Setup done\n");
@@ -97,6 +106,10 @@ int main(void){
 		
 		//Toggle Seconds LED
 		//Write your logic here
+		digitalWrite (LED, 1) ;     // On
+    		delay (1000) ;               // mS
+    		digitalWrite (LED, 0) ;     // Off
+    		delay (1000) ;
 		
 		// Print out the time we have stored on our RTC
 		printf("The current time is: %d:%d:%d\n", hours, mins, secs);
@@ -189,7 +202,9 @@ void hourInc(void){
 	if (interruptTime - lastInterruptTime>200){
 		printf("Interrupt 1 triggered, %x\n", hours);
 		//Fetch RTC Time
+		wiringPiI2CWriteReg8(RTC, HOUR_REGISTER)
 		//Increase hours by 1, ensuring not to overflow
+		
 		//Write hours back to the RTC
 	}
 	lastInterruptTime = interruptTime;
